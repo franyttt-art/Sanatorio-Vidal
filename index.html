@@ -4,6 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sanatorio Vidal - Sistema de Gestión</title>
+  <script>
+    // Bloquear clic derecho
+    document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
+    // Bloquear atajos de teclado para ver código / consola
+    document.addEventListener('keydown', function(e){
+      // F12
+      if(e.key === 'F12') { e.preventDefault(); return false; }
+      // Ctrl+U (ver fuente), Ctrl+S (guardar), Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+      if(e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) { e.preventDefault(); return false; }
+      if(e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C')) { e.preventDefault(); return false; }
+    });
+
+    // Limpiar la consola cada 2 segundos
+    setInterval(function(){ console.clear(); }, 2000);
+
+    // Detectar si DevTools está abierto por diferencia de tamaño de ventana
+    (function detectDevTools(){
+      var threshold = 160;
+      var check = function(){
+        if(window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold){
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;background:#0b1f3a;color:#fff"><svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><p style="font-size:1.1rem;font-weight:600;margin:0">Acceso restringido</p><p style="font-size:0.85rem;color:#94a3b8;margin:0">Por favor cerrá las herramientas del desarrollador.</p></div>';
+        }
+      };
+      setInterval(check, 1000);
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>
