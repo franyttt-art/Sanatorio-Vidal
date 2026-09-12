@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sanatorio Vidal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans" x-data="app()" x-cloak>
+
+  <!-- LOGIN -->
+  <div x-show="!loggedIn" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-slate-900">
+    <div class="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-sm">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">Sanatorio Vidal</h1>
+        <p class="text-slate-500 text-sm mt-1">Sistema de Gestión Hospitalaria</p>
+      </div>
+      <div x-show="loginError" class="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm" x-text="loginError"></div>
+      <form @submit.prevent="doLogin">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+          <input x-model="loginForm.email" type="email" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="usuario@vidal.com" required />
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+          <input x-model="loginForm.password" type="password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-2.5 text-sm transition-colors">Ingresar</button>
+      </form>
+      <div class="mt-6 p-3 bg-slate-50 rounded-lg text-xs text-slate-500">
+        <p class="font-semibold mb-1">Cuentas demo:</p>
+        <p>admin@vidal.com / demo1234</p>
+        <p>medico@vidal.com / demo1234</p>
+        <p>recepcion@vidal.com / demo1234</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div x-show="loggedIn" class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-slate-800 flex flex-col flex-shrink-0">
+      <div class="p-5 border-b border-slate-700">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-white font-bold text-sm">Sanatorio Vidal</p>
+            <p class="text-slate-400 text-xs">Sistema de Gestión</p>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        <button @click="page='dashboard'" :class="page==='dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'" class="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-left transition-colors text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+          Dashboard
+        </button>
+        <button @click="page='pacientes'" :class="page==='pacientes' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'" class="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-left transition-colors text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Pacientes
+        </button>
+        <button @click="page='turnos'" :class="page==='turnos' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'" class="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-left transition-colors text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Turnos
+        </button>
+        <button @click="page='historia'" :class="page==='historia' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'" class="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-left transition-colors text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Historia Clínica
+        </button>
+        <button @click="page='internaciones'" :class="page==='internaciones' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'" class="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-left transition-colors text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Internaciones
+        </button>
+        <button @click="page='medicos'" :class="page==='medicos' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'" class="flex items-center gap-3 px-4 py-2.5 rounded-lg w-full text-left transition-colors text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Médicos
+        </button>
+      </nav>
+      <div class="p-3 border-t border-slate-700">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold" x-text="currentUser.initials"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-white text-xs font-medium truncate" x-text="currentUser.name"></p>
+            <p class="text-slate-400 text-xs truncate" x-text="currentUser.role"></p>
+          </div>
+          <button @click="doLogout" title="Cerrar sesión" class="text-slate-400 hover:text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 overflow-y-auto">
+
+      <!-- DASHBOARD -->
+      <div x-show="page==='dashboard'" class="p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6">Dashboard</h2>
+        <div class="grid grid-cols-4 gap-5 mb-8">
+          <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+            <p class="text-slate-500 text-sm mb-1">Pacientes Totales</p>
+            <p class="text-3xl font-bold text-slate-800" x-text="pacientes.length"></p>
+            <p class="text-green-600 text-xs mt-1">+3 este mes</p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+            <p class="text-slate-500 text-sm mb-1">Turnos Registrados</p>
+            <p class="text-3xl font-bold text-slate-800" x-text="turnos.length"></p>
+            <p class="text-blue-600 text-xs mt-1" x-text="turnos.filter(t=>t.estado==='pendiente').length+' pendientes'"></p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+            <p class="text-slate-500 text-sm mb-1">Internaciones Activas</p>
+            <p class="text-3xl font-bold text-slate-800" x-text="internaciones.filter(i=>i.estado==='activa').length"></p>
+            <p class="text-orange-600 text-xs mt-1">camas ocupadas</p>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+            <p class="text-slate-500 text-sm mb-1">Médicos Activos</p>
+            <p class="text-3xl font-bold text-slate-800" x-text="medicos.filter(m=>m.activo).length"></p>
+            <p class="text-slate-400 text-xs mt-1">6 especialidades</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+          <div class="p-5 border-b border-slate-100"><h3 class="font-semibold text-slate-800">Últimos Turnos</h3></div>
+          <table class="w-full">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Médico</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Especialidad</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="t in turnos.slice(0,8)" :key="t.id">
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="px-5 py-3 text-sm text-slate-800" x-text="t.paciente"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.medico"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.especialidad"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.fecha+' '+t.hora"></td>
+                  <td class="px-5 py-3">
+                    <span :class="{
+                      'bg-yellow-100 text-yellow-800': t.estado==='pendiente',
+                      'bg-green-100 text-green-800': t.estado==='confirmado',
+                      'bg-blue-100 text-blue-800': t.estado==='atendido',
+                      'bg-red-100 text-red-800': t.estado==='cancelado'
+                    }" class="px-2 py-0.5 rounded-full text-xs font-medium" x-text="t.estado"></span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PACIENTES -->
+      <div x-show="page==='pacientes'" class="p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-800">Pacientes</h2>
+          <button @click="showNewPaciente=true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nuevo Paciente
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-5 p-4">
+          <input x-model="pacienteBusqueda" type="text" placeholder="Buscar por nombre o DNI..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+          <table class="w-full">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Nombre</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">DNI</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Nacimiento</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Obra Social</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Teléfono</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">HC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="p in pacientesFiltrados" :key="p.id">
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="px-5 py-3 text-sm font-medium text-slate-800" x-text="p.nombre+' '+p.apellido"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="p.dni"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="p.nacimiento"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="p.obraSocial||'-'"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="p.telefono||'-'"></td>
+                  <td class="px-5 py-3"><button @click="verHistoria(p)" class="text-blue-600 hover:text-blue-800 text-xs font-medium underline">Ver</button></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal -->
+        <div x-show="showNewPaciente" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showNewPaciente=false">
+          <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-bold text-slate-800 mb-5">Nuevo Paciente</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Nombre</label><input x-model="newPaciente.nombre" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Apellido</label><input x-model="newPaciente.apellido" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">DNI</label><input x-model="newPaciente.dni" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Fecha Nacimiento</label><input x-model="newPaciente.nacimiento" type="date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Sexo</label><select x-model="newPaciente.sexo" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option></select></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Teléfono</label><input x-model="newPaciente.telefono" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              <div class="col-span-2"><label class="block text-xs font-medium text-slate-600 mb-1">Obra Social</label><input x-model="newPaciente.obraSocial" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+              <button @click="showNewPaciente=false" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800">Cancelar</button>
+              <button @click="guardarPaciente()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TURNOS -->
+      <div x-show="page==='turnos'" class="p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-800">Turnos</h2>
+          <button @click="showNewTurno=true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nuevo Turno
+          </button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-5 p-4 flex gap-4">
+          <input x-model="turnoBusqueda" type="text" placeholder="Buscar paciente o médico..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <select x-model="turnoEstadoFiltro" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="atendido">Atendido</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+          <table class="w-full">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Paciente</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Médico</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Especialidad</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Fecha / Hora</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Motivo</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Estado</th>
+                <th class="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="t in turnosFiltrados" :key="t.id">
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="px-5 py-3 text-sm font-medium text-slate-800" x-text="t.paciente"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.medico"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.especialidad"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.fecha+' '+t.hora"></td>
+                  <td class="px-5 py-3 text-sm text-slate-600" x-text="t.motivo||'-'"></td>
+                  <td class="px-5 py-3">
+                    <span :class="{
+                      'bg-yellow-100 text-yellow-800': t.estado==='pendiente',
+                      'bg-green-100 text-green-800': t.estado==='confirmado',
+                      'bg-blue-100 text-blue-800': t.estado==='atendido',
+                      'bg-red-100 text-red-800': t.estado==='cancelado'
+                    }" class="px-2 py-0.5 rounded-full text-xs font-medium" x-text="t.estado"></span>
+                  </td>
+                  <td class="px-5 py-3 text-xs flex gap-1 flex-wrap">
+                    <button x-show="t.estado==='pendiente'" @click="t.estado='confirmado'" class="text-green-700 bg-green-50 hover:bg-green-100 px-2 py-0.5 rounded font-medium">Confirmar</button>
+                    <button x-show="t.estado==='confirmado'" @click="t.estado='atendido'" class="text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-medium">Atendido</button>
+                    <button x-show="t.estado!=='cancelado'&&t.estado!=='atendido'" @click="t.estado='cancelado'" class="text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded font-medium">Cancelar</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal -->
+        <div x-show="showNewTurno" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showNewTurno=false">
+          <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-bold text-slate-800 mb-5">Nuevo Turno</h3>
+            <div class="space-y-4">
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Paciente</label>
+                <select x-model="newTurno.paciente" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Seleccionar paciente</option>
+                  <template x-for="p in pacientes" :key="p.id"><option :value="p.nombre+' '+p.apellido" x-text="p.nombre+' '+p.apellido"></option></template>
+                </select></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Médico</label>
+                <select x-model="newTurno.medico" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Seleccionar médico</option>
+                  <template x-for="m in medicos" :key="m.id"><option :value="'Dr. '+m.nombre+' '+m.apellido" x-text="'Dr. '+m.nombre+' '+m.apellido"></option></template>
+                </select></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Especialidad</label>
+                <select x-model="newTurno.especialidad" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Seleccionar</option>
+                  <option>Cardiología</option><option>Clínica Médica</option><option>Traumatología</option><option>Pediatría</option><option>Ginecología</option><option>Neurología</option>
+                </select></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Fecha</label><input x-model="newTurno.fecha" type="date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Hora</label><input x-model="newTurno.hora" type="time" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              </div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Motivo</label><input x-model="newTurno.motivo" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Motivo de consulta" /></div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+              <button @click="showNewTurno=false" class="px-4 py-2 text-sm text-slate-600">Cancelar</button>
+              <button @click="guardarTurno()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIA CLINICA -->
+      <div x-show="page==='historia'" class="p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6">Historia Clínica</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-5 p-4">
+          <input x-model="historiaBusqueda" type="text" placeholder="Buscar paciente por nombre o DNI..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <template x-if="!historiaSeleccionada && historiaBusqueda.length>1">
+          <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+            <template x-for="p in pacientes.filter(p=>(p.nombre+' '+p.apellido).toLowerCase().includes(historiaBusqueda.toLowerCase())||p.dni.includes(historiaBusqueda))" :key="p.id">
+              <div class="flex items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer" @click="historiaSeleccionada=p">
+                <div>
+                  <p class="font-medium text-slate-800" x-text="p.nombre+' '+p.apellido"></p>
+                  <p class="text-sm text-slate-500">DNI: <span x-text="p.dni"></span> | <span x-text="p.obraSocial||'Sin obra social'"></span></p>
+                </div>
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <template x-if="historiaSeleccionada">
+          <div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-5 flex items-start justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-slate-800" x-text="historiaSeleccionada.nombre+' '+historiaSeleccionada.apellido"></h3>
+                <p class="text-sm text-slate-500 mt-0.5">DNI: <span x-text="historiaSeleccionada.dni"></span> &nbsp;|&nbsp; Nac: <span x-text="historiaSeleccionada.nacimiento"></span> &nbsp;|&nbsp; <span x-text="historiaSeleccionada.obraSocial||'Sin obra social'"></span></p>
+              </div>
+              <button @click="historiaSeleccionada=null;historiaBusqueda=''" class="text-slate-400 hover:text-slate-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <template x-if="historiaClinica.filter(h=>h.pacienteId===historiaSeleccionada.id).length===0">
+              <p class="text-slate-500 text-sm text-center py-10">No hay registros clínicos para este paciente.</p>
+            </template>
+            <div class="space-y-4">
+              <template x-for="hc in historiaClinica.filter(h=>h.pacienteId===historiaSeleccionada.id)" :key="hc.id">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                      <span class="font-semibold text-slate-700 text-sm" x-text="hc.fecha"></span>
+                      <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full font-medium" x-text="hc.tipo"></span>
+                    </div>
+                    <span class="text-xs text-slate-500" x-text="hc.medico"></span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+                    <template x-if="hc.anamnesis"><div><p class="text-xs font-semibold text-slate-400 uppercase mb-0.5">Anamnesis</p><p class="text-slate-700" x-text="hc.anamnesis"></p></div></template>
+                    <template x-if="hc.diagnostico"><div><p class="text-xs font-semibold text-slate-400 uppercase mb-0.5">Diagnóstico</p><p class="text-slate-700" x-text="hc.diagnostico"></p></div></template>
+                    <template x-if="hc.indicaciones"><div><p class="text-xs font-semibold text-slate-400 uppercase mb-0.5">Indicaciones</p><p class="text-slate-700" x-text="hc.indicaciones"></p></div></template>
+                    <template x-if="hc.receta"><div><p class="text-xs font-semibold text-slate-400 uppercase mb-0.5">Receta</p><p class="text-slate-700" x-text="hc.receta"></p></div></template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- INTERNACIONES -->
+      <div x-show="page==='internaciones'" class="p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-800">Internaciones</h2>
+          <button @click="showNewInternacion=true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nueva Internación
+          </button>
+        </div>
+        <div class="grid grid-cols-3 gap-5">
+          <template x-for="i in internaciones" :key="i.id">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <p class="text-xs font-semibold text-slate-400 uppercase">Cama</p>
+                  <p class="text-2xl font-bold text-slate-800" x-text="i.cama"></p>
+                  <p class="text-xs text-slate-500" x-text="i.sector"></p>
+                </div>
+                <span :class="i.estado==='activa' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-500'" class="text-xs px-2 py-0.5 rounded-full font-medium" x-text="i.estado"></span>
+              </div>
+              <p class="font-semibold text-slate-800 text-sm" x-text="i.paciente"></p>
+              <p class="text-slate-500 text-xs" x-text="i.medico"></p>
+              <p class="text-slate-500 text-xs mt-2">Ingreso: <span class="font-medium text-slate-700" x-text="i.fechaIngreso"></span></p>
+              <p class="text-slate-600 text-xs mt-1" x-text="i.motivo"></p>
+              <div class="mt-4">
+                <button x-show="i.estado==='activa'" @click="darAlta(i)" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-medium py-1.5 rounded-lg transition-colors">Dar de Alta</button>
+                <p x-show="i.estado!=='activa'" class="text-center text-xs text-slate-400 py-1.5">Alta: <span x-text="i.fechaEgreso"></span></p>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Modal -->
+        <div x-show="showNewInternacion" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showNewInternacion=false">
+          <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-bold text-slate-800 mb-5">Nueva Internación</h3>
+            <div class="space-y-4">
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Paciente</label>
+                <select x-model="newInternacion.paciente" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Seleccionar paciente</option>
+                  <template x-for="p in pacientes" :key="p.id"><option :value="p.nombre+' '+p.apellido" x-text="p.nombre+' '+p.apellido"></option></template>
+                </select></div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Médico Responsable</label>
+                <select x-model="newInternacion.medico" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="">Seleccionar médico</option>
+                  <template x-for="m in medicos" :key="m.id"><option :value="'Dr. '+m.nombre+' '+m.apellido" x-text="'Dr. '+m.nombre+' '+m.apellido"></option></template>
+                </select></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Sector</label>
+                  <select x-model="newInternacion.sector" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <option>Clínica Médica</option><option>Cardiología</option><option>UTI</option><option>Pediatría</option><option>Traumatología</option>
+                  </select></div>
+                <div><label class="block text-xs font-medium text-slate-600 mb-1">Cama</label><input x-model="newInternacion.cama" placeholder="Ej: 07-A" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" /></div>
+              </div>
+              <div><label class="block text-xs font-medium text-slate-600 mb-1">Motivo de Ingreso</label>
+                <textarea x-model="newInternacion.motivo" rows="3" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="Descripción del motivo de internación"></textarea></div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+              <button @click="showNewInternacion=false" class="px-4 py-2 text-sm text-slate-600">Cancelar</button>
+              <button @click="guardarInternacion()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Internar Paciente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEDICOS -->
+      <div x-show="page==='medicos'" class="p-8">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6">Médicos</h2>
+        <div class="grid grid-cols-3 gap-5">
+          <template x-for="m in medicos" :key="m.id">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span class="text-blue-700 font-bold text-lg" x-text="m.nombre[0]+m.apellido[0]"></span>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800" x-text="'Dr. '+m.nombre+' '+m.apellido"></p>
+                  <p class="text-sm text-blue-600" x-text="m.especialidad"></p>
+                </div>
+              </div>
+              <div class="text-sm space-y-1 text-slate-600">
+                <p>Matrícula: <span class="font-medium text-slate-800" x-text="m.matricula"></span></p>
+                <p x-text="m.telefono||'Sin teléfono registrado'"></p>
+              </div>
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <span :class="m.activo ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'" class="text-xs px-2 py-0.5 rounded-full font-medium" x-text="m.activo?'Activo':'Inactivo'"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<script>
+function app() {
+  return {
+    loggedIn: false,
+    page: 'dashboard',
+    loginError: '',
+    loginForm: { email: '', password: '' },
+    currentUser: { name: '', role: '', initials: '' },
+    pacienteBusqueda: '',
+    turnoBusqueda: '',
+    turnoEstadoFiltro: '',
+    historiaBusqueda: '',
+    historiaSeleccionada: null,
+    showNewPaciente: false,
+    showNewTurno: false,
+    showNewInternacion: false,
+    newPaciente: { nombre:'', apellido:'', dni:'', nacimiento:'', sexo:'', telefono:'', obraSocial:'' },
+    newTurno: { paciente:'', medico:'', especialidad:'', fecha:'', hora:'', motivo:'' },
+    newInternacion: { paciente:'', medico:'', sector:'Clínica Médica', cama:'', motivo:'' },
+
+    usuarios: [
+      { email:'admin@vidal.com', password:'demo1234', name:'Administrador Vidal', role:'Administrador', initials:'AV' },
+      { email:'medico@vidal.com', password:'demo1234', name:'Dr. Carlos López', role:'Médico', initials:'CL' },
+      { email:'recepcion@vidal.com', password:'demo1234', name:'María González', role:'Recepcionista', initials:'MG' },
+    ],
+
+    pacientes: [
+      { id:1,  nombre:'Juan',      apellido:'García',    dni:'28456123', nacimiento:'1985-03-15', sexo:'Masculino', telefono:'3412345678', obraSocial:'OSDE' },
+      { id:2,  nombre:'María',     apellido:'Rodríguez', dni:'31789456', nacimiento:'1992-07-22', sexo:'Femenino',  telefono:'3416789012', obraSocial:'Swiss Medical' },
+      { id:3,  nombre:'Carlos',    apellido:'Martínez',  dni:'25123789', nacimiento:'1978-11-08', sexo:'Masculino', telefono:'3419876543', obraSocial:'PAMI' },
+      { id:4,  nombre:'Ana',       apellido:'Fernández', dni:'33567890', nacimiento:'1996-02-14', sexo:'Femenino',  telefono:'3413456789', obraSocial:'Galeno' },
+      { id:5,  nombre:'Luis',      apellido:'Pérez',     dni:'27890234', nacimiento:'1982-09-30', sexo:'Masculino', telefono:'3418901234', obraSocial:'' },
+      { id:6,  nombre:'Laura',     apellido:'González',  dni:'35234567', nacimiento:'1999-05-17', sexo:'Femenino',  telefono:'3415678901', obraSocial:'IAPOZ' },
+      { id:7,  nombre:'Roberto',   apellido:'Sánchez',   dni:'24678901', nacimiento:'1975-12-03', sexo:'Masculino', telefono:'3412901345', obraSocial:'OSDE' },
+      { id:8,  nombre:'Patricia',  apellido:'López',     dni:'30123456', nacimiento:'1989-08-25', sexo:'Femenino',  telefono:'3417234567', obraSocial:'Swiss Medical' },
+      { id:9,  nombre:'Diego',     apellido:'Torres',    dni:'32456789', nacimiento:'1994-04-11', sexo:'Masculino', telefono:'3415678234', obraSocial:'Galeno' },
+      { id:10, nombre:'Silvia',    apellido:'Ramírez',   dni:'26789012', nacimiento:'1980-01-28', sexo:'Femenino',  telefono:'3413901678', obraSocial:'PAMI' },
+      { id:11, nombre:'Andrés',    apellido:'Herrera',   dni:'29012345', nacimiento:'1987-06-19', sexo:'Masculino', telefono:'3416234901', obraSocial:'Medifé' },
+      { id:12, nombre:'Gabriela',  apellido:'Moreno',    dni:'34345678', nacimiento:'1997-10-07', sexo:'Femenino',  telefono:'3419567234', obraSocial:'OSDE' },
+      { id:13, nombre:'Fernando',  apellido:'Jiménez',   dni:'23901234', nacimiento:'1972-03-22', sexo:'Masculino', telefono:'3412678567', obraSocial:'' },
+      { id:14, nombre:'Claudia',   apellido:'Ruiz',      dni:'31234567', nacimiento:'1991-11-14', sexo:'Femenino',  telefono:'3415901890', obraSocial:'Swiss Medical' },
+      { id:15, nombre:'Martín',    apellido:'Díaz',      dni:'28567890', nacimiento:'1984-07-08', sexo:'Masculino', telefono:'3418234123', obraSocial:'Galeno' },
+      { id:16, nombre:'Natalia',   apellido:'Vargas',    dni:'36901234', nacimiento:'2001-02-03', sexo:'Femenino',  telefono:'3413456780', obraSocial:'IAPOZ' },
+      { id:17, nombre:'Eduardo',   apellido:'Castro',    dni:'25234567', nacimiento:'1977-09-16', sexo:'Masculino', telefono:'3416789123', obraSocial:'OSDE' },
+      { id:18, nombre:'Cecilia',   apellido:'Ortiz',     dni:'33678901', nacimiento:'1995-05-29', sexo:'Femenino',  telefono:'3419012456', obraSocial:'PAMI' },
+      { id:19, nombre:'Javier',    apellido:'Medina',    dni:'27012345', nacimiento:'1983-12-01', sexo:'Masculino', telefono:'3412345789', obraSocial:'Medifé' },
+      { id:20, nombre:'Verónica',  apellido:'Ríos',      dni:'30456789', nacimiento:'1990-04-18', sexo:'Femenino',  telefono:'3415678012', obraSocial:'Swiss Medical' },
+    ],
+
+    medicos: [
+      { id:1, nombre:'Carlos',    apellido:'López',   matricula:'M-12345', especialidad:'Cardiología',    telefono:'3411111111', activo:true },
+      { id:2, nombre:'Alejandra', apellido:'Vega',    matricula:'M-23456', especialidad:'Clínica Médica', telefono:'3412222222', activo:true },
+      { id:3, nombre:'Roberto',   apellido:'Acosta',  matricula:'M-34567', especialidad:'Traumatología',  telefono:'3413333333', activo:true },
+      { id:4, nombre:'Mariana',   apellido:'Suárez',  matricula:'M-45678', especialidad:'Pediatría',      telefono:'3414444444', activo:true },
+      { id:5, nombre:'Pablo',     apellido:'Benítez', matricula:'M-56789', especialidad:'Neurología',     telefono:'3415555555', activo:true },
+      { id:6, nombre:'Lucía',     apellido:'Campos',  matricula:'M-67890', especialidad:'Ginecología',    telefono:'3416666666', activo:true },
+    ],
+
+    turnos: [
+      { id:1,  paciente:'Juan García',       medico:'Dr. Carlos López',    especialidad:'Cardiología',    fecha:'2026-09-10', hora:'08:30', motivo:'Control anual',           estado:'atendido' },
+      { id:2,  paciente:'María Rodríguez',   medico:'Dr. Alejandra Vega',  especialidad:'Clínica Médica', fecha:'2026-09-10', hora:'09:00', motivo:'Fiebre persistente',      estado:'atendido' },
+      { id:3,  paciente:'Carlos Martínez',   medico:'Dr. Roberto Acosta',  especialidad:'Traumatología',  fecha:'2026-09-10', hora:'09:30', motivo:'Dolor rodilla',           estado:'atendido' },
+      { id:4,  paciente:'Ana Fernández',     medico:'Dr. Mariana Suárez',  especialidad:'Pediatría',      fecha:'2026-09-11', hora:'10:00', motivo:'Control pediátrico',      estado:'confirmado' },
+      { id:5,  paciente:'Luis Pérez',        medico:'Dr. Carlos López',    especialidad:'Cardiología',    fecha:'2026-09-11', hora:'10:30', motivo:'Arritmia',                estado:'confirmado' },
+      { id:6,  paciente:'Laura González',    medico:'Dr. Lucía Campos',    especialidad:'Ginecología',    fecha:'2026-09-11', hora:'11:00', motivo:'Control rutinario',       estado:'pendiente' },
+      { id:7,  paciente:'Roberto Sánchez',   medico:'Dr. Pablo Benítez',   especialidad:'Neurología',     fecha:'2026-09-11', hora:'11:30', motivo:'Cefaleas crónicas',       estado:'pendiente' },
+      { id:8,  paciente:'Patricia López',    medico:'Dr. Alejandra Vega',  especialidad:'Clínica Médica', fecha:'2026-09-11', hora:'12:00', motivo:'Hipertensión',            estado:'pendiente' },
+      { id:9,  paciente:'Diego Torres',      medico:'Dr. Roberto Acosta',  especialidad:'Traumatología',  fecha:'2026-09-12', hora:'08:00', motivo:'Fractura muñeca',         estado:'pendiente' },
+      { id:10, paciente:'Silvia Ramírez',    medico:'Dr. Carlos López',    especialidad:'Cardiología',    fecha:'2026-09-12', hora:'08:30', motivo:'Disnea de esfuerzo',      estado:'pendiente' },
+      { id:11, paciente:'Andrés Herrera',    medico:'Dr. Mariana Suárez',  especialidad:'Pediatría',      fecha:'2026-09-12', hora:'09:00', motivo:'Control desarrollo',      estado:'pendiente' },
+      { id:12, paciente:'Gabriela Moreno',   medico:'Dr. Lucía Campos',    especialidad:'Ginecología',    fecha:'2026-09-12', hora:'09:30', motivo:'PAP anual',               estado:'pendiente' },
+      { id:13, paciente:'Fernando Jiménez',  medico:'Dr. Pablo Benítez',   especialidad:'Neurología',     fecha:'2026-09-13', hora:'10:00', motivo:'Mareos frecuentes',       estado:'pendiente' },
+      { id:14, paciente:'Claudia Ruiz',      medico:'Dr. Alejandra Vega',  especialidad:'Clínica Médica', fecha:'2026-09-13', hora:'10:30', motivo:'Diabetes control',        estado:'pendiente' },
+      { id:15, paciente:'Martín Díaz',       medico:'Dr. Carlos López',    especialidad:'Cardiología',    fecha:'2026-09-13', hora:'11:00', motivo:'Post-infarto seguimiento', estado:'cancelado' },
+    ],
+
+    internaciones: [
+      { id:1, cama:'01-A', sector:'Clínica Médica', paciente:'Roberto Sánchez',  medico:'Dr. Alejandra Vega', fechaIngreso:'2026-09-08', fechaEgreso:null,         motivo:'Neumonía bilateral. Fiebre 39.5C, sat 91%.', obraSocial:'OSDE',    estado:'activa' },
+      { id:2, cama:'02-B', sector:'Cardiología',    paciente:'Silvia Ramírez',    medico:'Dr. Carlos López',   fechaIngreso:'2026-09-09', fechaEgreso:null,         motivo:'Insuficiencia cardíaca descompensada. Edemas MMII, disnea de reposo.', obraSocial:'PAMI', estado:'activa' },
+      { id:3, cama:'UTI-1',sector:'UTI',            paciente:'Fernando Jiménez',  medico:'Dr. Pablo Benítez',  fechaIngreso:'2026-09-07', fechaEgreso:null,         motivo:'ACV isquémico. Hemiparesia derecha. Glasgow 12.', obraSocial:'Sin OS', estado:'activa' },
+      { id:4, cama:'04-C', sector:'Traumatología',  paciente:'Luis Pérez',        medico:'Dr. Roberto Acosta', fechaIngreso:'2026-09-10', fechaEgreso:null,         motivo:'Fractura expuesta tibia peroné derecho. Post-quirúrgico.', obraSocial:'Sin OS', estado:'activa' },
+      { id:5, cama:'05-A', sector:'Pediatría',      paciente:'Diego Torres',      medico:'Dr. Mariana Suárez', fechaIngreso:'2026-09-09', fechaEgreso:null,         motivo:'Bronquiolitis aguda. Sat 94%. Broncodilatadores.', obraSocial:'Galeno', estado:'activa' },
+      { id:6, cama:'03-B', sector:'Clínica Médica', paciente:'Eduardo Castro',    medico:'Dr. Alejandra Vega', fechaIngreso:'2026-09-05', fechaEgreso:'2026-09-09', motivo:'Pielonefritis aguda. Alta por mejoría clínica.', obraSocial:'OSDE',  estado:'alta' },
+    ],
+
+    historiaClinica: [
+      { id:1, pacienteId:1,  medico:'Dr. Carlos López',   fecha:'2026-09-10', tipo:'consulta',    anamnesis:'Palpitaciones ocasionales. Sin dolor precordial.', diagnostico:'Extrasístoles ventriculares benignas', indicaciones:'Evitar café y alcohol, reposo relativo', receta:'Magnesio 400mg/día' },
+      { id:2, pacienteId:2,  medico:'Dr. Alejandra Vega', fecha:'2026-09-10', tipo:'consulta',    anamnesis:'Fiebre 38.5C hace 3 días, odinofagia.', diagnostico:'Faringoamigdalitis aguda bacteriana', indicaciones:'Reposo, líquidos abundantes, antipiréticos', receta:'Amoxicilina 500mg c/8hs x 7 días. Ibuprofeno 400mg c/8hs.' },
+      { id:3, pacienteId:3,  medico:'Dr. Roberto Acosta', fecha:'2026-09-10', tipo:'consulta',    anamnesis:'Dolor rodilla derecha al subir escaleras, 2 meses evolución.', diagnostico:'Condromalacia rotuliana grado II', indicaciones:'Fisioterapia, evitar escaleras, hielo local 15min x 3 veces/día', receta:'Ibuprofeno 400mg c/8hs x 5 días.' },
+      { id:4, pacienteId:7,  medico:'Dr. Alejandra Vega', fecha:'2026-09-08', tipo:'internacion', anamnesis:'Disnea, fiebre 39.5C, tos productiva purulenta 4 días.', diagnostico:'Neumonía bilateral', indicaciones:'Reposo absoluto, ABT IV, kinesioterapia respiratoria, O2 suplementario', receta:'Ampicilina-Sulbactam 1.5g c/6hs IV. Azitromicina 500mg/día x 5 días.' },
+      { id:5, pacienteId:10, medico:'Dr. Carlos López',   fecha:'2026-09-09', tipo:'internacion', anamnesis:'Disnea de reposo, edemas MMII hasta rodillas, ortopnea 3 almohadas.', diagnostico:'Insuficiencia cardíaca descompensada clase IV (NYHA)', indicaciones:'Dieta hiposódica, restricción hídrica 1.5L/día, monitoreo continuo FC y saturación', receta:'Furosemida 80mg IV c/12hs. Enalapril 5mg/día. Espironolactona 25mg/día.' },
+      { id:6, pacienteId:20, medico:'Dr. Lucía Campos',   fecha:'2026-09-05', tipo:'consulta',    anamnesis:'Control de embarazo. 20 semanas de gestación. Sin molestias. Movimientos fetales presentes.', diagnostico:'Embarazo normal 20 semanas, sin complicaciones', indicaciones:'Continuar suplementos, caminar 30min/día, próximo control en 4 semanas', receta:'Ácido fólico 5mg/día. Hierro 300mg/día. Calcio 1000mg/día.' },
+      { id:7, pacienteId:9,  medico:'Dr. Roberto Acosta', fecha:'2026-09-10', tipo:'consulta',    anamnesis:'Caída de moto a baja velocidad. Dolor e impotencia funcional muñeca derecha.', diagnostico:'Fractura distal de radio derecho (Colles)', indicaciones:'Inmovilización con yeso braquipalmar, elevación MMSS, control Rx a los 7 días', receta:'Ketorolac 10mg c/8hs x 5 días. Omeprazol 20mg/día.' },
+      { id:8, pacienteId:4,  medico:'Dr. Mariana Suárez', fecha:'2026-08-20', tipo:'consulta',    anamnesis:'Control pediátrico anual. Niño sano 4 años. Desarrollo psicomotor normal. Vacunación al día.', diagnostico:'Niño sano, desarrollo adecuado para la edad', indicaciones:'Continuar controles anuales. Dieta balanceada. Actividad física.', receta:'' },
+    ],
+
+    get pacientesFiltrados() {
+      if (!this.pacienteBusqueda) return this.pacientes;
+      const q = this.pacienteBusqueda.toLowerCase();
+      return this.pacientes.filter(p =>
+        (p.nombre+' '+p.apellido).toLowerCase().includes(q) || p.dni.includes(q)
+      );
+    },
+
+    get turnosFiltrados() {
+      return this.turnos.filter(t => {
+        const q = this.turnoBusqueda.toLowerCase();
+        const matchQ = !q || t.paciente.toLowerCase().includes(q) || t.medico.toLowerCase().includes(q);
+        const matchE = !this.turnoEstadoFiltro || t.estado === this.turnoEstadoFiltro;
+        return matchQ && matchE;
+      });
+    },
+
+    doLogin() {
+      const u = this.usuarios.find(u => u.email === this.loginForm.email && u.password === this.loginForm.password);
+      if (u) {
+        this.currentUser = u;
+        this.loggedIn = true;
+        this.loginError = '';
+      } else {
+        this.loginError = 'Email o contraseña incorrectos. Revisá los datos.';
+      }
+    },
+
+    doLogout() {
+      this.loggedIn = false;
+      this.loginForm = { email:'', password:'' };
+      this.page = 'dashboard';
+      this.historiaSeleccionada = null;
+    },
+
+    verHistoria(p) {
+      this.historiaSeleccionada = p;
+      this.historiaBusqueda = p.nombre+' '+p.apellido;
+      this.page = 'historia';
+    },
+
+    guardarPaciente() {
+      if (!this.newPaciente.nombre || !this.newPaciente.apellido || !this.newPaciente.dni) {
+        alert('Nombre, apellido y DNI son obligatorios.');
+        return;
+      }
+      this.pacientes.push({ id: Date.now(), ...this.newPaciente });
+      this.newPaciente = { nombre:'', apellido:'', dni:'', nacimiento:'', sexo:'', telefono:'', obraSocial:'' };
+      this.showNewPaciente = false;
+    },
+
+    guardarTurno() {
+      if (!this.newTurno.paciente || !this.newTurno.medico || !this.newTurno.fecha) {
+        alert('Paciente, médico y fecha son obligatorios.');
+        return;
+      }
+      this.turnos.unshift({ id: Date.now(), ...this.newTurno, estado:'pendiente' });
+      this.newTurno = { paciente:'', medico:'', especialidad:'', fecha:'', hora:'', motivo:'' };
+      this.showNewTurno = false;
+    },
+
+    darAlta(internacion) {
+      const today = new Date().toISOString().split('T')[0];
+      internacion.estado = 'alta';
+      internacion.fechaEgreso = today;
+    },
+
+    guardarInternacion() {
+      if (!this.newInternacion.paciente || !this.newInternacion.medico || !this.newInternacion.cama) {
+        alert('Paciente, médico y cama son obligatorios.');
+        return;
+      }
+      const today = new Date().toISOString().split('T')[0];
+      this.internaciones.unshift({
+        id: Date.now(),
+        cama: this.newInternacion.cama,
+        sector: this.newInternacion.sector,
+        paciente: this.newInternacion.paciente,
+        medico: this.newInternacion.medico,
+        fechaIngreso: today,
+        fechaEgreso: null,
+        motivo: this.newInternacion.motivo,
+        obraSocial: '',
+        estado: 'activa'
+      });
+      this.newInternacion = { paciente:'', medico:'', sector:'Clínica Médica', cama:'', motivo:'' };
+      this.showNewInternacion = false;
+    }
+  };
+}
+</script>
+</body>
+</html>
