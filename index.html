@@ -8,12 +8,18 @@
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>
     [x-cloak] { display: none !important; }
+    :root {
+      --navy: #0b1f3a;
+      --navy-mid: #122952;
+      --navy-light: #1a3a6b;
+      --accent: #1d6fe8;
+    }
     .sidebar-link { display:flex; align-items:center; gap:0.75rem; padding:0.625rem 1rem; border-radius:0.5rem; font-size:0.875rem; font-weight:500; transition:background-color 0.15s; cursor:pointer; }
-    .sidebar-link:hover { background-color: rgba(255,255,255,0.1); }
-    .sidebar-link.active { background-color:#fff; color:#1d4ed8; }
-    .card { background:#fff; border-radius:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.07); border:1px solid #f3f4f6; padding:1.25rem; }
-    .btn-primary { background:#2563eb; color:#fff; padding:0.5rem 1rem; border-radius:0.5rem; font-size:0.875rem; font-weight:500; border:none; cursor:pointer; white-space:nowrap; }
-    .btn-primary:hover { background:#1d4ed8; }
+    .sidebar-link:hover { background-color: rgba(255,255,255,0.08); }
+    .sidebar-link.active { background-color:rgba(255,255,255,0.15); color:#fff; border-left:3px solid #60a5fa; padding-left:calc(1rem - 3px); }
+    .card { background:#fff; border-radius:0.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.08); border:1px solid #eef2f7; padding:1.25rem; }
+    .btn-primary { background:var(--accent); color:#fff; padding:0.5rem 1rem; border-radius:0.5rem; font-size:0.875rem; font-weight:500; border:none; cursor:pointer; white-space:nowrap; }
+    .btn-primary:hover { background:#1558c0; }
     .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
     .btn-secondary { background:#f3f4f6; color:#374151; padding:0.5rem 1rem; border-radius:0.5rem; font-size:0.875rem; font-weight:500; border:none; cursor:pointer; }
     .btn-secondary:hover { background:#e5e7eb; }
@@ -36,7 +42,7 @@
 <body class="bg-gray-50" x-data="app()" x-cloak>
 
   <!-- ============ LOGIN ============ -->
-  <div x-show="!loggedIn" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-700 to-blue-900 p-4">
+  <div x-show="!loggedIn" class="min-h-screen flex items-center justify-center p-4" style="background:linear-gradient(135deg,#0b1f3a 0%,#122952 50%,#1a3a6b 100%)">
     <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md">
       <div class="text-center mb-6">
         <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
@@ -83,12 +89,12 @@
          x-transition:leave-end="opacity-0"></div>
 
     <!-- SIDEBAR -->
-    <aside class="sidebar-drawer fixed md:relative inset-y-0 left-0 w-64 bg-gradient-to-b from-blue-700 to-blue-800 text-white flex flex-col z-40 flex-shrink-0"
+    <aside class="sidebar-drawer fixed md:relative inset-y-0 left-0 w-64 text-white flex flex-col z-40 flex-shrink-0" style="background:linear-gradient(180deg,#0b1f3a 0%,#122952 60%,#0e2348 100%)"
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'">
       <div class="p-4 border-b border-white/20 flex items-center justify-between">
         <div>
           <h1 class="font-bold text-base">Sanatorio Vidal</h1>
-          <p class="text-blue-200 text-xs">Sistema de Gestión</p>
+          <p class="text-blue-300 text-xs">Sistema de Gestión</p>
         </div>
         <!-- Cerrar en mobile -->
         <button @click="sidebarOpen=false" class="md:hidden text-white/70 hover:text-white p-1">
@@ -111,7 +117,7 @@
             <span class="badge text-white" :class="roleBadgeClass(currentUser?.rol)" x-text="currentUser?.rol"></span>
           </div>
         </div>
-        <button @click="logout()" class="w-full text-left text-xs text-blue-200 hover:text-white py-1">← Cerrar sesión</button>
+        <button @click="logout()" class="w-full text-left text-xs text-blue-300 hover:text-white py-1">← Cerrar sesión</button>
       </div>
     </aside>
 
@@ -524,29 +530,110 @@
               </table>
             </div>
           </div>
-          <div class="card">
-            <h3 class="font-semibold text-gray-900 mb-3 text-sm">Permisos por rol</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="border-b border-gray-200">
-                    <th class="text-left py-2 pr-4 font-medium text-gray-600">Acción</th>
-                    <th class="text-center py-2 px-2 font-medium text-purple-700">Admin</th>
-                    <th class="text-center py-2 px-2 font-medium text-blue-700">Médico</th>
-                    <th class="text-center py-2 px-2 font-medium text-green-700">Recep.</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  <template x-for="perm in permisosPorRol" :key="perm.accion">
-                    <tr>
-                      <td class="py-2 pr-4 text-gray-700 text-xs" x-text="perm.accion"></td>
-                      <td class="text-center py-2 px-2" x-text="perm.admin?'✅':'❌'"></td>
-                      <td class="text-center py-2 px-2" x-text="perm.medico?'✅':'❌'"></td>
-                      <td class="text-center py-2 px-2" x-text="perm.recepcionista?'✅':'❌'"></td>
-                    </tr>
+          <!-- PERMISOS COLAPSABLE -->
+          <div class="card" style="padding:0;overflow:hidden;">
+            <!-- Header colapsable -->
+            <button @click="mostrarPermisos=!mostrarPermisos"
+                    class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#0b1f3a">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-sm">Matriz de permisos</p>
+                  <p class="text-xs text-gray-500">Qué puede hacer cada rol en el sistema</p>
+                </div>
+              </div>
+              <svg class="w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0"
+                   :class="mostrarPermisos ? 'rotate-180' : ''"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <!-- Contenido colapsable -->
+            <div x-show="mostrarPermisos"
+                 x-transition:enter="transition-all duration-300 ease-out"
+                 x-transition:enter-start="opacity-0 max-h-0"
+                 x-transition:enter-end="opacity-100 max-h-screen"
+                 x-transition:leave="transition-all duration-200 ease-in"
+                 x-transition:leave-start="opacity-100 max-h-screen"
+                 x-transition:leave-end="opacity-0 max-h-0"
+                 style="overflow:hidden;">
+              <div class="px-4 pb-4">
+                <!-- Leyenda de roles -->
+                <div class="flex gap-2 mb-4 flex-wrap">
+                  <div class="flex items-center gap-1.5 bg-purple-50 border border-purple-100 rounded-full px-3 py-1">
+                    <div class="w-2 h-2 rounded-full bg-purple-600"></div>
+                    <span class="text-xs font-medium text-purple-700">Administrador</span>
+                    <span class="text-xs text-purple-500">— acceso total</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-100 rounded-full px-3 py-1">
+                    <div class="w-2 h-2 rounded-full bg-blue-600"></div>
+                    <span class="text-xs font-medium text-blue-700">Médico</span>
+                    <span class="text-xs text-blue-400">— clínico</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">
+                    <div class="w-2 h-2 rounded-full bg-emerald-600"></div>
+                    <span class="text-xs font-medium text-emerald-700">Recepcionista</span>
+                    <span class="text-xs text-emerald-500">— front-desk</span>
+                  </div>
+                </div>
+
+                <!-- Grupos de permisos -->
+                <div class="space-y-3">
+                  <template x-for="grupo in gruposPermisos" :key="grupo.titulo">
+                    <div class="rounded-xl border border-gray-100 overflow-hidden">
+                      <!-- Cabecera del grupo -->
+                      <div class="grid gap-0" style="grid-template-columns:1fr 56px 56px 56px;">
+                        <div class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 bg-gray-50 flex items-center gap-1.5">
+                          <span x-html="grupo.icono"></span>
+                          <span x-text="grupo.titulo"></span>
+                        </div>
+                        <div class="py-2 text-center bg-purple-50">
+                          <span class="text-xs font-bold text-purple-600">ADM</span>
+                        </div>
+                        <div class="py-2 text-center bg-blue-50">
+                          <span class="text-xs font-bold text-blue-600">MED</span>
+                        </div>
+                        <div class="py-2 text-center bg-emerald-50">
+                          <span class="text-xs font-bold text-emerald-600">REC</span>
+                        </div>
+                      </div>
+                      <!-- Filas del grupo -->
+                      <template x-for="(perm, idx) in grupo.permisos" :key="perm.accion">
+                        <div class="grid border-t border-gray-100" style="grid-template-columns:1fr 56px 56px 56px;">
+                          <div class="px-3 py-2.5 text-xs text-gray-700" x-text="perm.accion"></div>
+                          <div class="py-2.5 flex items-center justify-center" :class="idx%2===0?'bg-purple-50/40':'bg-white'">
+                            <span x-show="perm.admin" class="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            <span x-show="!perm.admin" class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </span>
+                          </div>
+                          <div class="py-2.5 flex items-center justify-center" :class="idx%2===0?'bg-blue-50/40':'bg-white'">
+                            <span x-show="perm.medico" class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            <span x-show="!perm.medico" class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </span>
+                          </div>
+                          <div class="py-2.5 flex items-center justify-center" :class="idx%2===0?'bg-emerald-50/40':'bg-white'">
+                            <span x-show="perm.recepcionista" class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                            <span x-show="!perm.recepcionista" class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
                   </template>
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -777,6 +864,7 @@
       showNuevaConsulta: false, formHC: {},
       showAltaModal: false, internacionParaAlta: null, diagnosticoEgreso: '', fechaEgreso: '',
       showNuevaInternacion: false, formInternacion: {},
+      mostrarPermisos: false,
 
       get puedoCrearHC() { return ['admin','medico'].includes(this.currentUser?.rol); },
 
@@ -947,6 +1035,47 @@
         {id:'int3',pacienteId:'pac10',medicoNombre:'Laura Gómez',cama:'15',sector:'Cardiología',fechaIngreso:'2026-09-10',fechaEgreso:null,motivo:'Insuficiencia cardíaca descompensada',obraSocial:'OSDE 210',diagnosticoEgreso:null,estado:'activa'},
         {id:'int4',pacienteId:'pac7',medicoNombre:'Roberto Fernández',cama:'03',sector:'Traumatología',fechaIngreso:'2026-08-28',fechaEgreso:'2026-09-03',motivo:'Fractura de cadera derecha — intervención quirúrgica',obraSocial:'',diagnosticoEgreso:'Osteosíntesis exitosa. Alta con kinesioterapia domiciliaria.',estado:'alta'},
         {id:'int5',pacienteId:'pac2',medicoNombre:'Valentina Torres',cama:'22',sector:'Maternidad',fechaIngreso:'2026-08-20',fechaEgreso:'2026-08-22',motivo:'Parto vaginal eutócico',obraSocial:'Swiss Medical',diagnosticoEgreso:'Puérpera sana. Alta materna y neonatal sin complicaciones.',estado:'alta'},
+      ],
+      gruposPermisos:[
+        {
+          titulo:'Pacientes y Turnos',
+          icono:'<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+          permisos:[
+            {accion:'Ver listado de pacientes',admin:true,medico:true,recepcionista:true},
+            {accion:'Crear / editar pacientes',admin:true,medico:true,recepcionista:true},
+            {accion:'Ver detalle de paciente',admin:true,medico:true,recepcionista:true},
+            {accion:'Ver y crear turnos',admin:true,medico:true,recepcionista:true},
+            {accion:'Cambiar estado de turno',admin:true,medico:true,recepcionista:true},
+          ]
+        },
+        {
+          titulo:'Historia Clínica',
+          icono:'<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+          permisos:[
+            {accion:'Ver historia clínica',admin:true,medico:true,recepcionista:true},
+            {accion:'Crear consulta médica',admin:true,medico:true,recepcionista:false},
+            {accion:'Ver recetas y diagnósticos',admin:true,medico:true,recepcionista:false},
+          ]
+        },
+        {
+          titulo:'Internaciones',
+          icono:'<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>',
+          permisos:[
+            {accion:'Ver internaciones',admin:true,medico:true,recepcionista:true},
+            {accion:'Internar paciente',admin:true,medico:true,recepcionista:false},
+            {accion:'Dar alta médica',admin:true,medico:true,recepcionista:false},
+          ]
+        },
+        {
+          titulo:'Administración',
+          icono:'<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+          permisos:[
+            {accion:'Ver sección Médicos',admin:true,medico:true,recepcionista:false},
+            {accion:'Agregar nuevos médicos',admin:true,medico:false,recepcionista:false},
+            {accion:'Ver usuarios del sistema',admin:true,medico:false,recepcionista:false},
+            {accion:'Activar / desactivar usuarios',admin:true,medico:false,recepcionista:false},
+          ]
+        },
       ],
       permisosPorRol:[
         {accion:'Dashboard',admin:true,medico:true,recepcionista:true},
