@@ -20,8 +20,10 @@
     // Limpiar la consola cada 2 segundos
     setInterval(function(){ console.clear(); }, 2000);
 
-    // Detectar si DevTools está abierto por diferencia de tamaño de ventana
+    // Detección de DevTools solo en desktop (no aplica en móviles)
     (function detectDevTools(){
+      var isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if(isMobile) return;
       var threshold = 160;
       var check = function(){
         if(window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold){
